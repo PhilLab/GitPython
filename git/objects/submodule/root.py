@@ -7,6 +7,7 @@ from .util import (
 )
 from git.exc import InvalidGitRepositoryError
 import git
+import os
 
 import logging
 
@@ -178,6 +179,14 @@ class RootModule(Submodule):
                     progress.update(
                         END | PATHCHANGE, i, len_csms, prefix + "Done moving repository of submodule %r" % sm.name)
                 # END handle path changes
+                
+                # HANDLE RELATIVE URL
+                ###################
+                if sm.url.startswith('..'):
+                    actual_url = os.path.join(repo.remotes.origin.url, sm.url)
+                    with sm.config_writer() as writer:
+                        writer.set('url', actual_url)
+                ###################
 
                 if sm.module_exists():
                     # HANDLE URL CHANGE
